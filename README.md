@@ -1,135 +1,140 @@
-# 🎮 Predator-Prey AI Simulation
+# 🦈 Deep Ocean - Fish vs Shark AI Simulation
 
-A 2D simulation demonstrating emergent behavior through reinforcement learning. Watch as AI agents learn to hunt and survive!
+A stunning 2D simulation where fish learn to escape from a sweeping shark using **Deep Reinforcement Learning**.
 
 ![Demo](demo.gif)
 
-## 🧠 Overview
+## 🎮 Overview
 
-This project implements a predator-prey ecosystem where:
+Watch as AI-controlled fish develop survival instincts through learning:
 
-- **Predators** 🔴 learn to chase and catch prey using Q-learning
-- **Prey** 🔵 learn survival strategies to escape predators
-- Both agents start with random behavior and develop intelligent strategies over time
+- **🦈 One Big Shark** - Sweeps horizontally across the ocean, unstoppable predator
+- **🐟 School of Fish** - Share a neural network, learn to escape together  
+- **👁️ Raycast Vision** - Fish "see" the shark and walls through 24 directional rays
+- **🧠 PPO Algorithm** - State-of-the-art Deep RL for learning escape strategies
 
 ## ✨ Features
 
-- **Tabular Q-Learning**: Simple yet effective RL algorithm
-- **Real-time Learning**: Watch agents improve episode by episode
-- **Beautiful Visualization**: Dark-themed animation with trails and effects
-- **Learning Curves**: Track performance metrics over training
-- **Model Persistence**: Save and load trained agents
+- **Beautiful Pygame Visualization**
+  - Animated shark with realistic movement
+  - Colorful fish with trailing effects
+  - Underwater caustics and bubbles
+  - Particle effects on fish death
 
-## 🛠️ Tech Stack
-
-- Python 3.10+
-- NumPy - numerical operations
-- Matplotlib - visualization & video rendering
+- **Deep Reinforcement Learning**
+  - Shared policy network (all fish use same "brain")
+  - Raycast-based observations (24 rays detecting shark/walls)
+  - PPO (Proximal Policy Optimization) training
+  - PyTorch implementation
 
 ## 🚀 Quick Start
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/ai-sim-predator-prey.git
-cd ai-sim-predator-prey
+# Clone repo
+git clone https://github.com/yahia-ferchichi/predators.git
+cd predators
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Optional: Install FFmpeg for MP4 export
-# macOS: brew install ffmpeg
-# Ubuntu: sudo apt install ffmpeg
 ```
 
-### Run Simulation
+### Watch Random Agents (No Training)
 
 ```bash
-python main.py
+python watch_random.py
 ```
 
-This will:
-1. Train both agents for 800 episodes
-2. Generate `demo.mp4` (or `demo.gif` if FFmpeg unavailable)
-3. Save learning curves to `learning_curves.png`
-4. Export trained models as `.pkl` files
+See untrained fish swimming randomly - they'll get eaten quickly!
 
-## 📊 How It Works
+### Train the Fish
+
+```bash
+python train.py
+```
+
+Watch fish learn to escape over time.
+
+### Record Video
+
+```bash
+python watch_random.py --record
+```
+
+## 🎯 How It Works
 
 ### Environment
-- 20×20 grid world
-- Agents can move: ↑ ↓ ← → or stay
-- Episode ends when predator catches prey or timeout (200 steps)
+- **Ocean**: 800×600 pixel continuous space
+- **Shark**: Sweeps horizontally, moves up after each pass
+- **Fish**: 15 fish, each with raycast vision
 
-### State Space
-Each agent observes:
-- Relative direction to opponent (discretized)
-- Distance category (close/medium/far)
+### Observation Space (per fish)
+| Component | Size | Description |
+|-----------|------|-------------|
+| Shark rays | 24 | Distance to shark in each direction |
+| Wall rays | 24 | Distance to walls in each direction |
+| Shark direction | 2 | Relative x, y to shark |
+| Shark distance | 1 | Normalized distance |
+| Velocity | 2 | Current fish velocity |
+| **Total** | **53** | |
 
-### Reward Structure
+### Action Space
+- Continuous 2D: `(dx, dy)` acceleration in range `[-1, 1]`
 
-| Agent | Reward |
+### Rewards
+| Event | Reward |
 |-------|--------|
-| Predator | +10 catch, +0.5 per cell closer, -0.1 step penalty |
-| Prey | -10 caught, +0.5 per cell farther, +0.1 survival bonus |
-
-### Learning Parameters
-- Learning rate (α): 0.15 (predator), 0.2 (prey)
-- Discount factor (γ): 0.95
-- Exploration: ε-greedy with decay (1.0 → 0.01)
+| Survival (per step) | +0.1 |
+| Distance from shark | +0.05 (if far) |
+| Getting eaten | -10.0 |
 
 ## 📁 Project Structure
 
 ```
-ai-sim-predator-prey/
-├── main.py           # Training loop & visualization
-├── agents.py         # Q-learning agent classes
-├── environment.py    # 2D grid environment
-├── utils.py          # Helper functions
-├── requirements.txt  # Dependencies
-├── README.md
-├── demo.mp4          # Generated video
-└── learning_curves.png
+predators/
+├── environment.py      # Gym-compatible ocean environment
+├── visualization.py    # Pygame renderer with effects
+├── train.py           # PPO training implementation
+├── watch_random.py    # Demo with random agents
+├── requirements.txt   # Dependencies
+└── README.md
 ```
 
-## 📈 Results
+## 🎬 Creating Content
 
-After training, you should see:
-- **Catch rate**: ~60-80% (varies by run)
-- **Learned behaviors**:
-  - Predator: Direct pursuit, cutting off escape routes
-  - Prey: Evasive movement, boundary awareness
+The visualization is designed to be **visually engaging** for social media:
 
-## 🎬 Demo Video
+1. Run `python watch_random.py --record` to capture footage
+2. The underwater effects, colorful fish, and dramatic shark create eye-catching content
+3. Perfect for Instagram Reels, YouTube Shorts, TikTok
 
-The generated video shows trained agents in action:
-- Red dot = Predator
-- Blue dot = Prey
-- Fading trails show movement history
-- Stats display step count and distance
+## 🛠️ Configuration
 
-## 🔧 Configuration
-
-Edit `CONFIG` in `main.py` to customize:
+Edit parameters in `environment.py`:
 
 ```python
-CONFIG = {
-    "grid_size": 20,              # World size
-    "training_episodes": 800,     # Training duration
-    "video_fps": 15,              # Output video FPS
-    "record_last_n_episodes": 5,  # Episodes to record
-}
+OceanEnvironment(
+    width=800,          # Ocean width
+    height=600,         # Ocean height
+    num_fish=15,        # Number of fish
+    num_rays=24,        # Raycast resolution
+    shark_speed=2.0,    # Shark movement speed
+    fish_speed=4.0,     # Max fish speed
+)
 ```
+
+## 📈 Training Progress
+
+After training, you should see:
+- **Early**: Fish swim randomly, most get eaten
+- **Mid**: Fish start avoiding shark's path
+- **Late**: Fish develop coordinated escape strategies
 
 ## 📝 License
 
-MIT License - feel free to use for your own projects!
-
-## 🙏 Acknowledgments
-
-Inspired by classic predator-prey models in ecology and multi-agent reinforcement learning research.
+MIT License - Use freely for learning and portfolio!
 
 ---
 
-*Built with 🔥 for learning and portfolio demonstration*
+*Built with 🐟 PyTorch + Pygame for AI portfolio demonstration*
