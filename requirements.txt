@@ -1,0 +1,5 @@
+# Predator-Prey AI Simulation
+# Python 3.10+ required
+
+numpy>=1.21.0
+matplotlib>=3.5.0
